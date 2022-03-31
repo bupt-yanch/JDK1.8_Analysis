@@ -97,6 +97,9 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
+    /**
+     * native的hashcode生成值和对象地址相关，那么不同对象使用native方法生成的hashcode一定不同
+     */
     public native int hashCode();
 
     /**
@@ -144,6 +147,11 @@ public class Object {
      *          argument; {@code false} otherwise.
      * @see     #hashCode()
      * @see     java.util.HashMap
+     */
+    /**
+     * 这里 == 进行比较是直接比较栈中存储的对象地址，不同对象equals比较一定为false
+     * 关于重写equals一定要重写hashcode。应该是为了HashMap、HashSet相关类的使用
+     * 如果重写了equals，判定两个对象是相等的，但是由于hashcode依旧使用native方法，两对象在hashMap中可能会hash到不同槽点
      */
     public boolean equals(Object obj) {
         return (this == obj);
@@ -497,6 +505,18 @@ public class Object {
      *             this exception is thrown.
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#notifyAll()
+     */
+    /**
+     * 只有在拿到锁才可以调用wait方法释放锁
+     * synchronized (object) { // 大量线程阻塞在这里，进入等待队列
+     *     while (condition not satisfied) { //一个线程被notify，进入临界区，若不满足某些条件（可以是顺序条件等），wait等待
+     *         object.wait(); // 这里主动wait，过段时间会被自动唤醒，继续循环判断是否满足条件。
+     *                          //且因为没有notify，临界区里其实仅有这个线程一直循环判断、wait，直到满足条件，执行action，离开临界区前notifyAll释放锁
+     *     }
+     *
+     *     action...
+     *     object.notifyAll();
+     * }
      */
     public final void wait() throws InterruptedException {
         wait(0);
