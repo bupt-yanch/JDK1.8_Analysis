@@ -682,6 +682,7 @@ public final class String
      *             string.
      * @since      1.5
      */
+    // codePoint 即为特定字符在某个字符集中的序号
     public int codePointAt(int index) {
         if ((index < 0) || (index >= value.length)) {
             throw new StringIndexOutOfBoundsException(index);
@@ -1150,6 +1151,7 @@ public final class String
      *          value greater than {@code 0} if this string is
      *          lexicographically greater than the string argument.
      */
+    // 基于unicode字符集 按照字典序排列
     public int compareTo(String anotherString) {
         int len1 = value.length;
         int len2 = anotherString.value.length;
@@ -1199,6 +1201,7 @@ public final class String
                     c1 = Character.toUpperCase(c1);
                     c2 = Character.toUpperCase(c2);
                     if (c1 != c2) {
+                        // 这里同 regionMatches 里的逻辑，应该是某些字符集转换case有问题，所以需要double check
                         c1 = Character.toLowerCase(c1);
                         c2 = Character.toLowerCase(c2);
                         if (c1 != c2) {
@@ -1464,6 +1467,8 @@ public final class String
      */
     public int hashCode() {
         int h = hash;
+        // 进行h == 0 判断为了防止重复计算hashCode
+        // 这里简单进行了字符串哈希，使用的base是31，应该会有不同字符串hashCode值相同的情况
         if (h == 0 && value.length > 0) {
             char val[] = value;
 
@@ -1551,6 +1556,7 @@ public final class String
             return -1;
         }
 
+        // 常规字符 16bit内表示
         if (ch < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
             // handle most cases here (ch is a BMP code point or a
             // negative value (invalid code point))
@@ -1562,6 +1568,7 @@ public final class String
             }
             return -1;
         } else {
+            // 补充字符 超出16bit表示
             return indexOfSupplementary(ch, fromIndex);
         }
     }
@@ -2029,6 +2036,7 @@ public final class String
             return this;
         }
         int len = value.length;
+        // 创建新数组 存储拼接字符串 应该是O(m+n)，且最后新建了String对象
         char buf[] = Arrays.copyOf(value, len + otherLen);
         str.getChars(buf, len);
         return new String(buf, true);
@@ -2341,11 +2349,13 @@ public final class String
               (((ch = regex.charAt(1))-'0')|('9'-ch)) < 0 &&
               ((ch-'a')|('z'-ch)) < 0 &&
               ((ch-'A')|('Z'-ch)) < 0)) &&
+                // 这里是判断字符是否是 超大字符集（两个char表示一个字符）
             (ch < Character.MIN_HIGH_SURROGATE ||
              ch > Character.MAX_LOW_SURROGATE))
         {
             int off = 0;
             int next = 0;
+            // limit = 0 表示无限制
             boolean limited = limit > 0;
             ArrayList<String> list = new ArrayList<>();
             while ((next = indexOf(ch, off)) != -1) {
@@ -2354,6 +2364,7 @@ public final class String
                     off = next + 1;
                 } else {    // last one
                     //assert (list.size() == limit - 1);
+                    // 这段else代码块是否可以删掉 由下面的 Add remaining segment 代码块处理最后一部分字符串
                     list.add(substring(off, value.length));
                     off = value.length;
                     break;
@@ -2869,6 +2880,7 @@ public final class String
         int st = 0;
         char[] val = value;    /* avoid getfield opcode */
 
+        // ascii 0-31都为特殊字符 space为32 所以这里trim其实消除了不少字符
         while ((st < len) && (val[st] <= ' ')) {
             st++;
         }
@@ -2896,6 +2908,9 @@ public final class String
      */
     public char[] toCharArray() {
         // Cannot use Arrays.copyOf because of class initialization order issues
+        // https://stackoverflow.com/questions/49715328/why-doesnt-string-tochararray-use-arrays-copyof
+        // 为什么不用Arrays.copyOf() 上面的大哥解释说JVM启动时会调用String.toCharArray()方法
+        // 但此时Arrays类还没被加载到JVM方法区中，就会报错
         char result[] = new char[value.length];
         System.arraycopy(value, 0, result, 0, value.length);
         return result;

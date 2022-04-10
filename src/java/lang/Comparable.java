@@ -133,5 +133,6 @@ public interface Comparable<T> {
      * @throws ClassCastException if the specified object's type prevents it
      *         from being compared to this object.
      */
+    // 强烈推荐的使用方式：(x.compareTo(y)==0) == (x.equals(y)) 即自然顺序和equals结果一致
     public int compareTo(T o);
 }

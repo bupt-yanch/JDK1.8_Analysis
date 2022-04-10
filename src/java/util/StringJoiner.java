@@ -167,6 +167,7 @@ public final class StringJoiner {
                 int initialLength = value.length();
                 String result = value.append(suffix).toString();
                 // reset value to pre-append initialLength
+                // setLength 仅仅是变量赋值（指针移动）故这里没有用先提出String再拼接suffix的方式（创建两次对象）
                 value.setLength(initialLength);
                 return result;
             }
@@ -219,6 +220,9 @@ public final class StringJoiner {
     }
 
     private StringBuilder prepareBuilder() {
+        // 秒！使用该函数在add指定字符串前附加 分隔符/前缀
+        // 感觉有点代理模式的味道
+        // 在指定行为前附加一个调用者感知不到的处理逻辑
         if (value != null) {
             value.append(delimiter);
         } else {
