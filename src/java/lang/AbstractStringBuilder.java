@@ -147,6 +147,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      */
     private int newCapacity(int minCapacity) {
         // overflow-conscious code
+        // 数组扩容到原来长度的二倍+2
         int newCapacity = (value.length << 1) + 2;
         if (newCapacity - minCapacity < 0) {
             newCapacity = minCapacity;
@@ -491,6 +492,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     private AbstractStringBuilder appendNull() {
         int c = count;
         ensureCapacityInternal(c + 4);
+        // 为什么这里不和616行的append(boolean)写法一致呢
         final char[] value = this.value;
         value[c++] = 'n';
         value[c++] = 'u';
@@ -664,6 +666,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(int i) {
+        // 这里特殊处理应该是 Integer的范围是 -2^31 - 2^31-1
+        // 下面有Integer.stringSize(-i)的操作，如果不特殊处理，MIN_VALUE 会溢出
         if (i == Integer.MIN_VALUE) {
             append("-2147483648");
             return this;
