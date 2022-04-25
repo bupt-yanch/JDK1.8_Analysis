@@ -532,6 +532,8 @@ import java.util.Arrays;
         // Note, synchronization achieved via invocations of other StringBuffer methods
         // after narrowing of s to specific type
         // Ditto for toStringCache clearing
+        // 该抽象类方法中会根据参数进行选择，调用其他insert方法，最终在abstract class里调用被override的synchronized本类方法
+        // 故这个方法没必要限定synchronized
         super.insert(dstOffset, s);
         return this;
     }
@@ -665,6 +667,8 @@ import java.util.Arrays;
 
     @Override
     public synchronized String toString() {
+        // 这里应该可以和StringBuilder一样，使用一个复制char[]的string构造函数，就无需维护这个缓存数组
+        // 好处应该是多次调用toString函数，产生的String对象共享一个char[]
         if (toStringCache == null) {
             toStringCache = Arrays.copyOfRange(value, 0, count);
         }
