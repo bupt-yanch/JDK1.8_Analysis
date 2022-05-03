@@ -209,6 +209,8 @@ public final class Boolean implements java.io.Serializable,
      * @return a hash code value for a {@code boolean} value.
      * @since 1.8
      */
+    // https://blog.csdn.net/qq_21251983/article/details/52164403
+    // 为什么要取1231 和 1237
     public static int hashCode(boolean value) {
         return value ? 1231 : 1237;
     }
