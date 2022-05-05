@@ -104,6 +104,7 @@ public final class Double extends Number implements Comparable<Double> {
      *
      * @since 1.6
      */
+    // 最大指数，和上面的MAX_VALUE对应
     public static final int MAX_EXPONENT = 1023;
 
     /**
@@ -832,6 +833,7 @@ public final class Double extends Number implements Comparable<Double> {
      * @param   value   a {@code double} precision floating-point number.
      * @return the bits that represent the floating-point number.
      */
+    // 将double映射到long上(将double数值转换为IEEE 754 浮点双精度格式)
     public static long doubleToLongBits(double value) {
         long result = doubleToRawLongBits(value);
         // Check for NaN based on values of bit fields, maximum
