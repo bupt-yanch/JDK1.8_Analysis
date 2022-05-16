@@ -140,6 +140,7 @@ public final class Integer extends Number implements Comparable<Integer> {
         boolean negative = (i < 0);
         int charPos = 32;
 
+        // 转为负数处理应该是防止 Integer.MIN_VALUE * -1 溢出
         if (!negative) {
             i = -i;
         }
@@ -309,6 +310,8 @@ public final class Integer extends Number implements Comparable<Integer> {
     private static String toUnsignedString0(int val, int shift) {
         // assert shift > 0 && shift <=5 : "Illegal shift value";
         int mag = Integer.SIZE - Integer.numberOfLeadingZeros(val);
+
+        // (a + b - 1) / b 经典的操作了
         int chars = Math.max(((mag + (shift - 1)) / shift), 1);
         char[] buf = new char[chars];
 
@@ -327,9 +330,12 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @param len the number of characters to write
      * @return the lowest character  location used
      */
+     // https://blog.csdn.net/cnds123321/article/details/117664348
+     // shift是指每次滑动的位数，如果要变为16进制 shift为4，8进制则为3，二进制为1
      static int formatUnsignedInt(int val, int shift, char[] buf, int offset, int len) {
         int charPos = len;
         int radix = 1 << shift;
+        // 16进制的mask为 1111，八进制为111
         int mask = radix - 1;
         do {
             buf[offset + --charPos] = Integer.digits[val & mask];
@@ -444,6 +450,8 @@ public final class Integer extends Number implements Comparable<Integer> {
         while (i >= 65536) {
             q = i / 100;
         // really: r = i - (q * 100);
+            // 左移6位 等于 乘64，所以这里是64+32+4=100
+            // 这么做应该是比 %100 操作快
             r = i - ((q << 6) + (q << 5) + (q << 2));
             i = q;
             buf [--charPos] = DigitOnes[r];
@@ -453,6 +461,10 @@ public final class Integer extends Number implements Comparable<Integer> {
         // Fall thru to fast mode for smaller numbers
         // assert(i <= 65536, i);
         for (;;) {
+            // https://blog.kaaass.net/archives/698
+            // 这里其实是进行了一个除10的骚操作
+            // 乘法和移位操作是比除法快的
+            // 选择52429其实是在不溢出的范围内选择的最大精度
             q = (i * 52429) >>> (16+3);
             r = i - ((q << 3) + (q << 1));  // r = i-(q*10) ...
             buf [--charPos] = digits [r];
@@ -1343,6 +1355,8 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
+    // https://blog.csdn.net/qq_43091847/article/details/103902357
+    // 把最高位的1往后刷一遍，最后只留下最高位的1
     public static int highestOneBit(int i) {
         // HD, Figure 3-1
         i |= (i >>  1);
@@ -1366,6 +1380,8 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     the specified value is itself equal to zero.
      * @since 1.5
      */
+    // 和补码的规则有关
+    // -i是i按位取反再加一，其实就是最低的1位不变，往上的全翻转
     public static int lowestOneBit(int i) {
         // HD, Section 2-1
         return i & -i;
@@ -1397,10 +1413,13 @@ public final class Integer extends Number implements Comparable<Integer> {
         if (i == 0)
             return 32;
         int n = 1;
+        // 判断高16位，如果高16位为0，则将低16位左移，n记录前缀0的数量
         if (i >>> 16 == 0) { n += 16; i <<= 16; }
+        // 同理判断高8位
         if (i >>> 24 == 0) { n +=  8; i <<=  8; }
         if (i >>> 28 == 0) { n +=  4; i <<=  4; }
         if (i >>> 30 == 0) { n +=  2; i <<=  2; }
+        // 判断最高位，如果为1就再减1
         n -= i >>> 31;
         return n;
     }
@@ -1419,6 +1438,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     to zero.
      * @since 1.5
      */
+    // 整体逻辑类似numberOfLeadingZeros
     public static int numberOfTrailingZeros(int i) {
         // HD, Figure 5-14
         int y;
