@@ -349,6 +349,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param val the value to format
      * @param shift the log2 of the base to format in (4 for hex, 3 for octal, 1 for binary)
      */
+    // 类似Integer里toUnsignedString0的写法
     static String toUnsignedString0(long val, int shift) {
         // assert shift > 0 && shift <=5 : "Illegal shift value";
         int mag = Long.SIZE - Long.numberOfLeadingZeros(val);
@@ -923,6 +924,8 @@ public final class Long extends Number implements Comparable<Long> {
             // If number is Long.MIN_VALUE, we'll end up here. The next line
             // handles this case, and causes any genuine format error to be
             // rethrown.
+            // 防止922行的(-result.longValue())溢出（value为Long.MAX_VALUE是会溢出）
+            // 这里重新组装string去解析
             String constant = negative ? ("-" + nm.substring(index))
                                        : nm.substring(index);
             result = Long.valueOf(constant, radix);
@@ -1057,6 +1060,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @return a hash code value for a {@code long} value.
      * @since 1.8
      */
+    // 这里可以看出从long -> int的映射存在哈希冲突
     public static int hashCode(long value) {
         return (int)(value ^ (value >>> 32));
     }
@@ -1418,6 +1422,7 @@ public final class Long extends Number implements Comparable<Long> {
          if (i == 0)
             return 64;
         int n = 1;
+        // 逻辑同Integer，只不过多了一个高32位判别，且需要转int
         int x = (int)(i >>> 32);
         if (x == 0) { n += 32; x = (int)i; }
         if (x >>> 16 == 0) { n += 16; x <<= 16; }
