@@ -40,6 +40,7 @@ package java.lang;
  * @see     java.lang.Number
  * @since   JDK1.1
  */
+// short 是 integer 的子集，方法基本全是调用integer的方法，最后再转short
 public final class Short extends Number implements Comparable<Short> {
 
     /**
