@@ -52,6 +52,8 @@ import java.io.ObjectStreamException;
  * @see     java.util.EnumMap
  * @since   1.5
  */
+// enum关键字会对每一个枚举对象创建一个Enum对象
+// https://blog.csdn.net/qq_43842093/article/details/121175711
 public abstract class Enum<E extends Enum<E>>
         implements Comparable<E>, Serializable {
     /**

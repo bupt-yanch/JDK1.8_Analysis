@@ -298,6 +298,7 @@ class Thread implements Runnable {
      *          <i>interrupted status</i> of the current thread is
      *          cleared when this exception is thrown.
      */
+    // sleep过程中不释放资源
     public static native void sleep(long millis) throws InterruptedException;
 
     /**
@@ -696,6 +697,8 @@ class Thread implements Runnable {
      * @see        #run()
      * @see        #stop()
      */
+    // start只能调用一次，也就是一个Thread只能启动一次
+    // 通过native方法启动后，JVM会调用对应的Runnable的run方法
     public synchronized void start() {
         /**
          * This method is not invoked for the main method thread or "system"
